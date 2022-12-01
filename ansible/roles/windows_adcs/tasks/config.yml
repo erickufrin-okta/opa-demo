@@ -1,0 +1,24 @@
+- name: Install ActiveDirectoryCSDsc
+  win_psmodule:
+    name: ActiveDirectoryCSDsc
+    state: present
+
+- name: Configure AD CA role
+  win_dsc:
+    resource_name: AdcsCertificationAuthority
+    IsSingleInstance: 'Yes'
+    CAType: 'EnterpriseRootCA'
+    CryptoProviderName: 'RSA#Microsoft Software Key Storage Provider'
+    KeyLength: 2048
+    HashAlgorithmName: 'SHA256'
+    ValidityPeriod: 'Years'
+    ValidityPeriodUnits: 99
+    PsDscRunAsCredential_username: '{{ ansible_user }}'
+    PsDscRunAsCredential_password: '{{ ansible_password }}'
+    Credential_username: '{{ ansible_user }}'
+    Credential_password: '{{ ansible_password }}'
+
+- name: reboot | Rebooting Server
+  win_reboot:
+    reboot_timeout_sec: 300
+    shutdown_timeout: 300

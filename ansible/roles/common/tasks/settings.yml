@@ -1,0 +1,13 @@
+---
+- name: Disable Windows Defender
+  win_regedit:
+    key: "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection"
+    value: DisableRealTimeMonitoring
+    datatype: dword
+    data: 1
+
+- name: Disable Network Level Authentication. Required for ASA Smartcard logon RDP.
+  ansible.windows.win_powershell:
+    script: |
+      $ComputerName = [System.Net.Dns]::GetHostName()
+      (Get-WmiObject -class "Win32_TSGeneralSetting" -Namespace root\cimv2\terminalservices -ComputerName $ComputerName -Filter "TerminalName='RDP-tcp'").SetUserAuthenticationRequired(0)

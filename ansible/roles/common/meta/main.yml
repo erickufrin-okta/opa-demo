@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  role_name: install_misc_software
+  author: Sachin Saxena
+  description: Install some basic software
+  license: BSD
+  min_ansible_version: 2.4
+  platforms:
+  - name: Windows
+    versions:
+     - 2016R2
+  galaxy_tags:
+    - system
+    - security
+dependencies: []

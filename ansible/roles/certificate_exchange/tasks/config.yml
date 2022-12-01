@@ -1,0 +1,36 @@
+- name: Create temporary certificate directory
+  ansible.windows.win_file:
+    path: "{{ certificate_info['win_cert_dir'] }}"
+    state: directory
+
+- name: Copy Certificate Request on Windows Machine
+  ansible.windows.win_copy:
+    src: "{{ certificate_info['local_cert_dir'] }}{{ certificate_info['ss_file_name'] }}"
+    dest: "{{ certificate_info['win_cert_dir'] }}{{ certificate_info['ss_file_name'] }}"
+
+- name: 'Install Self Signed Certificate'
+  ansible.windows.win_certificate_store:
+    path: "{{ certificate_info['win_cert_dir'] }}{{ certificate_info['ss_file_name'] }}"
+    store_location: LocalMachine
+    store_name: Root
+    state: present
+
+- name: 'Import the certificate into AD'
+  win_command: >
+    certutil -dspublish -f {{ certificate_info['ss_file_name'] }} NTAuthCA
+  args:
+    chdir: "{{ certificate_info['win_cert_dir'] }}"
+  register: signing_req
+
+- name: 'Import the certificate into registry'
+  win_command: >
+    certutil -enterprise -addstore NTAuth {{ certificate_info['ss_file_name'] }}
+  args:
+    chdir: "{{ certificate_info['win_cert_dir'] }}"
+  register: signing_req
+
+- name: reboot | Rebooting Server
+  win_reboot:
+    reboot_timeout_sec: 300
+    shutdown_timeout: 300
+

@@ -1,0 +1,8 @@
+---
+- name: features | Installing Windows AD Certification Service
+  win_feature:
+    name: Adcs-Cert-Authority
+    state: present
+    include_management_tools: yes
+    include_sub_features: yes
+  register: _windows_ad_cs

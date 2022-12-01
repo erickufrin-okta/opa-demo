@@ -1,0 +1,26 @@
+- name: Run PowerShell script to add ca template
+  ansible.windows.win_powershell:
+    script: |
+      param (
+      [String]
+      $CA_TEMPLATE_DISPLAY_NAME,
+      [String]
+      $CA_TEMPLATE_TO_COPY
+      )
+      $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext
+      $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
+      
+      $NewTempl = $ADSI.Create("pKICertificateTemplate", "CN=$CA_TEMPLATE_DISPLAY_NAME")
+      $NewTempl.put("distinguishedName","CN=$CA_TEMPLATE_DISPLAY_NAME,CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext")
+      # and put other atributes that you need       
+      $SubCATempl = $ADSI.psbase.children | where {$_.displayName -match $CA_TEMPLATE_TO_COPY}
+
+      $NewTempl.pKIKeyUsage = $SubCATempl.pKIKeyUsage
+      $NewTempl.pKIExpirationPeriod = $SubCATempl.pKIExpirationPeriod
+      $NewTempl.pKIOverlapPeriod = $SubCATempl.pKIOverlapPeriod
+      $NewTempl.SetInfo()
+      
+      $NewTempl | select *
+    parameters:
+      CA_TEMPLATE_DISPLAY_NAME: "Test"
+      CA_TEMPLATE_TO_COPY: "Subordinate Certificate Authority"
